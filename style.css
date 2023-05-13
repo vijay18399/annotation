@@ -1,0 +1,22 @@
+body {
+  margin: 0px;
+  padding: 0px;
+  background-color: black;
+  padding: 0 5%;
+}
+body * {
+  margin: 5px 0px;
+}
+#canvasContainer,
+#imageContainer,
+#fabricContainer {
+  min-height: 100vh;
+  overflow: hidden;
+  display: flex;
+  justify-content: center;
+}
+
+#image {
+  width: 100%;
+  height: auto;
+}
