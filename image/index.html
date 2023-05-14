@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>Annotation Tool</title>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://unpkg.com/fabric@latest/dist/fabric.js"></script>
+    <script src="https://unpkg.com/fabric@latest/src/mixins/eraser_brush.mixin.js"></script>
+    <link rel="stylesheet" href="../common/style.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/1.3.2/jspdf.min.js"></script>
+</head>
+
+<body>
+
+    <!-- <div id="fabricContainer" class="fcontainer">
+        <canvas id="fabric"></canvas>
+    </div> -->
+    <div id="annotation"></div>
+    <div id="toolbar">
+        <div onclick="setTool('pencil')">Pencil</div>
+        <div onclick="setTool('eraser')">Eraser</div>
+        <div onclick="setTool('selector')">selector</div>
+        <div onclick="download()">Download</div>
+    </div>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.7.0/jquery.js"
+        integrity="sha512-8Z5++K1rB3U+USaLKG6oO8uWWBhdYsM3hmdirnOEWp8h2B1aOikj5zBzlXs8QOrvY9OxEnD2QDkbSKKpfqcIWw=="
+        crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+    <script src="../common/pdf.js"></script>
+    <!--   <script src="./pdf2images.js"></script> -->
+    <script src="./script.js"></script>
+
+</body>
+
+</html>

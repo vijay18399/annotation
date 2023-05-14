@@ -22,11 +22,11 @@ function loadFile(inputData) {
         selection: false,
       });
 
-      fabricCanvas.setWidth(canvas.width);
-      fabricCanvas.setHeight(canvas.height);
+      fabricCanvas.setWidth(canvasContainer.clientWidth);
+      fabricCanvas.setHeight(canvasContainer.clientWidth / aspectRatio);
 
       fabric.Image.fromURL(fileUrl, function (img) {
-        img.scaleToWidth(canvas.width);
+        img.scaleToWidth(canvasContainer.clientWidth);
         fabricCanvas.setBackgroundImage(
           img,
           fabricCanvas.renderAll.bind(fabricCanvas),
@@ -38,9 +38,23 @@ function loadFile(inputData) {
       });
     };
   } else {
+    pdfToImages("./sample.pdf", function (images) {
+      console.log(images); // List of image URLs
+    });
   }
 }
-loadFile({
-  fileUrl: "./samples/sample_page-0002.jpg",
-  type: "image",
-});
+
+const params = new URLSearchParams(window.location.search);
+const imageUrl = params.get("image") || "./sample2.jpg";
+const pdfUrl = params.get("pdf") || "./sample.pdf";
+if (!imageUrl) {
+  loadFile({
+    fileUrl: pdfUrl,
+    type: "pdf",
+  });
+} else {
+  loadFile({
+    fileUrl: imageUrl,
+    type: "image",
+  });
+}

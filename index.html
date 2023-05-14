@@ -5,7 +5,6 @@
     <title>Annotation Tool</title>
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/fabric.js/4.3.0/fabric.min.js"></script>
-
     <link rel="stylesheet" href="./style.css">
 </head>
 
@@ -16,9 +15,12 @@
     <div id="imageContainer">
         <img id="image" alt="">
     </div>
-    <div id="fabricContainer">
+    <div class="fcontainer">
         <canvas id="fabric"></canvas>
     </div>
+    <div id="annotation"></div>
+    <script src="./pdf.js"></script>
+    <script src="./pdf2images.js"></script>
     <script src="./script.js"></script>
 
 </body>

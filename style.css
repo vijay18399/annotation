@@ -9,14 +9,14 @@ body * {
 }
 #canvasContainer,
 #imageContainer,
-#fabricContainer {
-  min-height: 100vh;
+.fcontainer {
+  height: 100%;
   overflow: hidden;
   display: flex;
   justify-content: center;
 }
 
-#image {
+img {
   width: 100%;
   height: auto;
 }

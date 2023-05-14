@@ -1,0 +1,36 @@
+body {
+  margin: 0px;
+  padding: 0px;
+  background-color: black;
+  padding: 0 5%;
+}
+
+#canvasContainer,
+#imageContainer,
+.fcontainer {
+  height: 100%;
+  overflow: hidden;
+  display: flex;
+  justify-content: center;
+  margin: 10px 0px;
+}
+.fcontainer:last-child {
+  padding-bottom: 30px;
+}
+img {
+  width: 100%;
+  height: auto;
+}
+#toolbar {
+  position: fixed;
+  height: 50px;
+  width: 100%;
+  left: 0px;
+  top: -5px;
+  background-color: #1d8f6f;
+  color: aliceblue;
+  display: flex;
+}
+#toolbar * {
+  margin: 4px;
+}
