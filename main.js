@@ -1,21 +1,50 @@
-function loadImage(imgUrl, index) {
-  let imgElement = document.getElementById(`img-${index}`);
-  imgElement.setAttribute("src", imgUrl);
-  imgElement.addEventListener("load", () => {
-    let fcontainer = document.getElementById(`fabric-${index}-Container`);
-    fcontainer.style.width = `${imgElement.width}px`;
-    fcontainer.style.height = `${imgElement.height}px`;
-    fabricCanvas[index] = new fabric.Canvas(`fabric-${index}`, {
-      backgroundColor: "transparent",
-      selection: false,
-      width: imgElement.width,
-      height: imgElement.height,
-    });
-  });
+let source, mode;
+function init() {
+  let params = new URLSearchParams(window.location.search);
+  source = params.get("source");
+  mode = params.get("mode");
+
+  if (source) {
+    // Make an AJAX request to fetch the PDF file
+    let xhr = new XMLHttpRequest();
+    xhr.open("GET", source, true);
+    xhr.responseType = "blob";
+
+    xhr.onload = function () {
+      if (xhr.status === 200) {
+        let blob = xhr.response;
+
+        // Create a new FileReader to read the blob data
+        let reader = new FileReader();
+        reader.onloadend = function () {
+          // Get the base64-encoded data URL
+          let dataUrl = reader.result;
+
+          // Pass the data URL to the function that handles the PDF or the Image
+          if (mode == "img") {
+            document.getElementById("annotation").innerHTML = `
+            <div class="fcontainer" id="fabric-${1}-Container"> 
+                 <canvas id="fabric-${1}"></canvas>
+                 <img  class="image" src="" id="img-${1}">
+            </div> `;
+          }
+          mode == "pdf" ? handlePdf(dataUrl) : handleImage(dataUrl, 1);
+        };
+        reader.readAsDataURL(blob);
+      } else {
+        console.error("Failed to fetch the PDF file.");
+      }
+    };
+
+    xhr.send();
+  } else {
+    console.error("No PDF source provided.");
+  }
 }
-function loadPdf(pdfUrl) {
+
+function handlePdf(pdfUrl) {
   var PDFJS = window["pdfjs-dist/build/pdf"];
-  PDFJS.GlobalWorkerOptions.workerSrc = "../common/pdf.worker.js";
+  PDFJS.GlobalWorkerOptions.workerSrc = "./pdf.worker.js";
   var loadingTask = PDFJS.getDocument(pdfUrl);
 
   loadingTask.promise.then(
@@ -39,11 +68,11 @@ function loadPdf(pdfUrl) {
           renderTask.promise.then(function () {
             let imageUrl = canvas.toDataURL("image/png");
             images.push(imageUrl);
-            loadImage(imageUrl, pageNumber);
+            handleImage(imageUrl, pageNumber);
             if (pageNumber < totalPages) {
               getPage(pageNumber + 1);
             } else {
-              setTool("selector");
+              //   setTool("selector");
             }
           });
         });
@@ -56,33 +85,20 @@ function loadPdf(pdfUrl) {
     }
   );
 }
-isPdf = false;
-let fabricCanvas = [],
-  images = [];
-const params = new URLSearchParams(window.location.search);
-const imageUrl = params.get("image");
-const pdfUrl = params.get("pdf");
-if (pdfUrl) {
-  isPdf = true;
-  loadPdf(pdf);
-} else if (imageUrl) {
-  document.getElementById(
-    "annotation"
-  ).innerHTML = `<div class="fcontainer" id="fabric-${1}-Container"> <canvas id="fabric-${1}"></canvas></div> `;
-  loadImage(imageUrl, 1);
-} else {
-  if (false) {
-    document.getElementById("annotation").innerHTML = `
-    <div class="fcontainer" id="fabric-${1}-Container"> 
-          <canvas id="fabric-${1}"></canvas>
-          <img  class="image" src="" id="img-${1}">
-    </div> `;
-
-    loadImage("../common/sample2.jpg", 1);
-  } else {
-    isPdf = true;
-    loadPdf("../common/sample.pdf");
-  }
+function handleImage(imgUrl, index) {
+  let imgElement = document.getElementById(`img-${index}`);
+  imgElement.setAttribute("src", imgUrl);
+  imgElement.addEventListener("load", () => {
+    let fcontainer = document.getElementById(`fabric-${index}-Container`);
+    fcontainer.style.width = `${imgElement.width}px`;
+    fcontainer.style.height = `${imgElement.height}px`;
+    fabricCanvas[index] = new fabric.Canvas(`fabric-${index}`, {
+      backgroundColor: "transparent",
+      selection: false,
+      width: imgElement.width,
+      height: imgElement.height,
+    });
+  });
 }
 function appendFabricCanvas(length) {
   let annotation = document.getElementById("annotation");
@@ -97,8 +113,6 @@ function appendFabricCanvas(length) {
   }
   annotation.innerHTML = child;
 }
-var originalWidth;
-var originalHeight;
 function setTool(tool) {
   fabricCanvas.forEach((fabricCanvas) => {
     // Set tool behavior based on current tool
@@ -122,56 +136,32 @@ function setTool(tool) {
     }
   });
 }
-var currentCanvas;
 function download() {
-  if (isPdf) {
+  if (mode == "pdf") {
     const doc = new jsPDF();
     let pageCount = 0;
-    for (var i = 1; i <= fabricCanvas.length; i++) {
+    for (let i = 1; i < fabricCanvas.length; i++) {
       const canvas = document.createElement("canvas");
-      const context = canvas.getContext("2d");
-
-      // Load original image to get its width and height
       const img = new Image();
       img.src = images[i - 1];
-      img.onload = function () {
-        // Set canvas dimensions to match input image
-        canvas.width = img.width;
-        canvas.height = img.height;
-        context.drawImage(img, 0, 0, canvas.width, canvas.height);
-        currentCanvas = fabricCanvas[i];
-        // Draw fabric canvas image on top of input image
-        // currentCanvas.renderAll();
-        const imageData = currentCanvas.toDataURL({
-          format: "png",
-          multiplier: 1,
-          left: 0,
-          top: 0,
-          width: currentCanvas.width,
-          height: currentCanvas.height,
-        });
-        const img2 = new Image();
-        img2.src = imageData;
-        img2.onload = function () {
-          context.drawImage(img2, 0, 0, canvas.width, canvas.height);
-          const imageURL = canvas.toDataURL("image/jpeg", 0.8);
-          doc.addImage(
-            imageURL,
-            "JPEG",
-            0,
-            0,
-            doc.internal.pageSize.width,
-            doc.internal.pageSize.height
-          );
-          pageCount++;
 
-          if (pageCount === fabricCanvas.length) {
-            doc.save("document.pdf");
-          } else {
-            doc.addPage();
-          }
-        };
-      };
+      generateCanvasImage(canvas, img, fabricCanvas[i], function (imageURL) {
+        doc.addImage(
+          imageURL,
+          "JPEG",
+          0,
+          0,
+          doc.internal.pageSize.width,
+          doc.internal.pageSize.height
+        );
+        pageCount++;
+
+        if (pageCount == fabricCanvas.length - 1) {
+          doc.save("document.pdf");
+        } else {
+          doc.addPage();
+        }
+      });
     }
   } else {
     let imgElement = document.getElementById(`img-1`);
@@ -210,3 +200,41 @@ function download() {
     };
   }
 }
+function generateCanvasImage(canvas, img, fabricCanvas, callback) {
+  const context = canvas.getContext("2d");
+  img.onload = function () {
+    canvas.width = img.width;
+    canvas.height = img.height;
+    context.drawImage(img, 0, 0, canvas.width, canvas.height);
+
+    const imageURL = canvas.toDataURL("image/jpeg", 0.8);
+
+    generateFabricCanvasImage(canvas, fabricCanvas, function () {
+      callback(imageURL);
+    });
+  };
+}
+
+function generateFabricCanvasImage(canvas, fabricCanvas, callback) {
+  const context = canvas.getContext("2d");
+  fabricCanvas.renderAll();
+  const imageData = fabricCanvas.toDataURL({
+    format: "png",
+    multiplier: 1,
+    left: 0,
+    top: 0,
+    width: fabricCanvas.width,
+    height: fabricCanvas.height,
+  });
+
+  const img = new Image();
+  img.src = imageData;
+
+  img.onload = function () {
+    context.drawImage(img, 0, 0, canvas.width, canvas.height);
+    callback();
+  };
+}
+var images = [];
+var fabricCanvas = [];
+init();

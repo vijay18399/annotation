@@ -4,8 +4,12 @@ body {
   background-color: black;
   padding: 0 5%;
 }
-body * {
-  margin: 5px 0px;
+#annotation {
+  background: black;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  flex-direction: column;
 }
 #canvasContainer,
 #imageContainer,
@@ -14,9 +18,38 @@ body * {
   overflow: hidden;
   display: flex;
   justify-content: center;
+  margin-bottom: 10px;
 }
-
+.fcontainer:last-child {
+  padding-bottom: 30px;
+}
 img {
   width: 100%;
   height: auto;
+}
+#toolbar {
+  position: fixed;
+  height: 28px;
+  /* width: 100%; */
+  left: 15%;
+  bottom: 16px;
+  background-color: #3f51b5;
+  color: aliceblue;
+  display: flex;
+  border-radius: 10px;
+  align-items: center;
+  justify-content: center;
+  padding: 5px;
+}
+#toolbar i {
+  margin: 4px;
+  width: 30px;
+  height: 30px;
+  border-radius: 10px;
+  background-color: aliceblue;
+  color: #3f51b5;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
 }
