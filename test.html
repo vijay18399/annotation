@@ -119,16 +119,10 @@
       fabricCanvas.on({
         "touch:gesture": function (e) {
             console.log("touch:gesture",e)
-          if (e.e.touches && e.e.touches.length == 2) {
-            pausePanning = true;
-            var point = new fabric.Point(e.self.x, e.self.y);
-            if (e.self.state == "start") {
-              zoomStartScale = self.canvas.getZoom();
-            }
-            var delta = zoomStartScale * e.self.scale;
-            self.canvas.zoomToPoint(point, delta);
-            pausePanning = false;
-          }
+     let isGestureEvent = true;
+    var lPinchScale = e.self.scale;
+    var scaleDiff = (lPinchScale -1)/10 + 1;// Slow down zoom speed
+    canvas.setZoom (canvas.viewport.zoom * scaleDiff);
         },
         "object:selected": function () {
           pausePanning = true;
