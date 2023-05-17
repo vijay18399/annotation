@@ -19,6 +19,7 @@ body {
   display: flex;
   justify-content: center;
   margin-bottom: 10px;
+  position: relative;
 }
 .fcontainer:last-child {
   padding-bottom: 30px;
@@ -41,6 +42,7 @@ img {
   justify-content: center;
   padding: 5px;
 }
+.pageActions i,
 #toolbar i {
   margin: 4px;
   width: 30px;
@@ -52,4 +54,9 @@ img {
   align-items: center;
   justify-content: center;
   cursor: pointer;
+}
+#pageActions {
+  position: absolute;
+  right: 0px;
+  top: 0px;
 }

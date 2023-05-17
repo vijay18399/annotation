@@ -25,7 +25,11 @@ function init() {
             document.getElementById("annotation").innerHTML = `
             <div class="fcontainer" id="fabric-${1}-Container"> 
                  <canvas id="fabric-${1}"></canvas>
-                 <img  class="image" src="" id="img-${1}">
+                       <div class="pageActions">
+             <i   onclick="rotate(${1})" class="fa-solid fa-rotate-right"></i>
+              <i  onclick="zoom(${1},false)" class="fa-solid fa-magnifying-glass-plus"></i>
+              <i onclick="zoom(${1},true)" class="fa-solid fa-magnifying-glass-minus"></i>
+          </div>
             </div> `;
           }
           mode == "pdf" ? handlePdf(dataUrl) : handleImage(dataUrl, 1);
@@ -54,7 +58,7 @@ function handlePdf(pdfUrl) {
       appendFabricCanvas(totalPages);
       function getPage(pageNumber) {
         pdf.getPage(pageNumber).then(function (page) {
-          var scale = 1.5;
+          var scale = 2;
           var viewport = page.getViewport({ scale: scale });
           var canvas = document.createElement("canvas");
           var context = canvas.getContext("2d");
@@ -86,18 +90,26 @@ function handlePdf(pdfUrl) {
   );
 }
 function handleImage(imgUrl, index) {
-  let imgElement = document.getElementById(`img-${index}`);
-  imgElement.setAttribute("src", imgUrl);
-  imgElement.addEventListener("load", () => {
-    let fcontainer = document.getElementById(`fabric-${index}-Container`);
-    fcontainer.style.width = `${imgElement.width}px`;
-    fcontainer.style.height = `${imgElement.height}px`;
-    fabricCanvas[index] = new fabric.Canvas(`fabric-${index}`, {
-      backgroundColor: "transparent",
-      selection: false,
-      width: imgElement.width,
-      height: imgElement.height,
-    });
+  fabricCanvas[index] = new fabric.Canvas(`fabric-${index}`, {
+    backgroundColor: "transparent",
+    selection: false,
+    // isDrawingMode: true,
+  });
+
+  fabric.Image.fromURL(imgUrl, function (img) {
+    let aspectRatio = img.width / img.height;
+    let fabricContainer = document.getElementById(`fabric-${index}-Container`);
+    fabricCanvas[index].setWidth(fabricContainer.clientWidth);
+    fabricCanvas[index].setHeight(fabricContainer.clientWidth / aspectRatio);
+    img.scaleToWidth(fabricContainer.clientWidth);
+    fabricCanvas[index].setBackgroundImage(
+      img,
+      fabricCanvas[index].renderAll.bind(fabricCanvas[index]),
+      {
+        scaleX: fabricCanvas[index].width / img.width,
+        scaleY: fabricCanvas[index].height / img.height,
+      }
+    );
   });
 }
 function appendFabricCanvas(length) {
@@ -108,7 +120,11 @@ function appendFabricCanvas(length) {
       child +
       `<div class="fcontainer" id="fabric-${k}-Container">
           <canvas id="fabric-${k}"></canvas>
-          <img src="" id="img-${k}">
+          <div class="pageActions">
+              <i   onclick="rotate(${k})" class="fa-solid fa-rotate-right"></i>
+              <i  onclick="zoom(${k},false)" class="fa-solid fa-magnifying-glass-plus"></i>
+              <i onclick="zoom(${k},true)" class="fa-solid fa-magnifying-glass-minus"></i>
+          </div>
        </div> `;
   }
   annotation.innerHTML = child;
@@ -135,6 +151,37 @@ function setTool(tool) {
         break;
     }
   });
+}
+function zoom(index, isZoomIn) {
+  const canvas = fabricCanvas[index];
+  if (isZoomIn) {
+    zoomIn(canvas);
+  } else {
+    zoomOut(canvas);
+  }
+}
+
+function zoomIn(canvas) {
+  const zoomFactor = 1.1;
+  const zoom = canvas.getZoom() * zoomFactor;
+  canvas.zoomToPoint({ x: canvas.width / 2, y: canvas.height / 2 }, zoom);
+}
+
+function zoomOut(canvas) {
+  const zoomFactor = 0.9;
+  const zoom = canvas.getZoom() * zoomFactor;
+  canvas.zoomToPoint({ x: canvas.width / 2, y: canvas.height / 2 }, zoom);
+}
+
+function rotate(index) {
+  const container = document.getElementById(`fabric-${index}-Container`);
+  const canvas = fabricCanvas[index];
+
+  const currentRotation = container.style.transform;
+  const currentAngle = parseFloat(currentRotation.replace(/[^\d.-]/g, "")) || 0;
+  const newAngle = currentAngle + 90;
+
+  container.style.transform = `rotate(${newAngle}deg)`;
 }
 function download() {
   if (mode == "pdf") {
