@@ -1,0 +1,267 @@
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Document</title>
+    <style>
+      body {
+        margin: 0px;
+        padding: 0px;
+        background-color: black;
+        /* padding: 0 5%; */
+      }
+      #annotation {
+        background: black;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        flex-direction: column;
+      }
+      #canvasContainer,
+      #imageContainer,
+      .fcontainer {
+        height: 100%;
+        width: 100%;
+        overflow: hidden;
+        display: flex;
+        justify-content: center;
+        margin-bottom: 10px;
+      }
+      .fcontainer:last-child {
+        padding-bottom: 30px;
+      }
+      img {
+        width: 100%;
+        height: auto;
+      }
+      #toolbar {
+        position: fixed;
+        height: 28px;
+        /* width: 100%; */
+        left: 15%;
+        bottom: 16px;
+        background-color: #3f51b5;
+        color: aliceblue;
+        display: flex;
+        border-radius: 10px;
+        align-items: center;
+        justify-content: center;
+        padding: 5px;
+      }
+      .pageActions i,
+      #toolbar i {
+        margin: 4px;
+        width: 30px;
+        height: 30px;
+        border-radius: 10px;
+        background-color: aliceblue;
+        color: #3f51b5;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+      }
+      .pageActions {
+        position: absolute;
+        right: 0px;
+        top: 0px;
+      }
+    </style>
+  </head>
+  <body>
+    <!-- <script src="https://unpkg.com/fabric@latest/dist/fabric.js"></script> -->
+    <script src="./fabric.js"></script>
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
+      integrity="sha512-iecdLmaskl7CVkqkXNQ/ZH/XLlvWZOJyj7Yy7tcenmpD1ypASozpmT/E0iPtmFIB46ZmdtAc9eNBvH0H/ZpiBw=="
+      crossorigin="anonymous"
+      referrerpolicy="no-referrer"
+    />
+    <div id="annotation">
+      <div class="fcontainer" id="fabric-1-Container">
+        <canvas id="fabric-1"></canvas>
+        <div class="pageActions">
+          <i
+            onclick="zoom(false)"
+            class="fa-solid fa-magnifying-glass-minus"
+          ></i>
+          <i onclick="zoom(true)" class="fa-solid fa-magnifying-glass-plus"></i>
+          <!-- <i onclick="toggle()" class="fa-solid fa-hand"></i> -->
+        </div>
+      </div>
+    </div>
+    <script>
+      var fabricCanvas = new fabric.Canvas(`fabric-1`, {
+        backgroundColor: "transparent",
+        selection: false,
+        // isDrawingMode :true
+      });
+      var imgUrl = "./test2.png";
+      var currentX,currentY,lastX,lastY;
+      fabric.Image.fromURL(imgUrl, function (img) {
+        let aspectRatio = img.width / img.height;
+        let fabricContainer = document.getElementById(`fabric-1-Container`);
+        fabricCanvas.setWidth(fabricContainer.clientWidth);
+        fabricCanvas.setHeight(fabricContainer.clientWidth / aspectRatio);
+        img.scaleToWidth(fabricContainer.clientWidth);
+        fabricCanvas.setBackgroundImage(
+          img,
+          fabricCanvas.renderAll.bind(fabricCanvas),
+          {
+            scaleX: fabricCanvas.width / img.width,
+            scaleY: fabricCanvas.height / img.height,
+          }
+        );
+      });
+      let pausePanning =false;
+      fabricCanvas.on({
+        "touch:gesture": function (e) {
+            console.log("touch:gesture",e)
+          if (e.e.touches && e.e.touches.length == 2) {
+            pausePanning = true;
+            var point = new fabric.Point(e.self.x, e.self.y);
+            if (e.self.state == "start") {
+              zoomStartScale = self.canvas.getZoom();
+            }
+            var delta = zoomStartScale * e.self.scale;
+            self.canvas.zoomToPoint(point, delta);
+            pausePanning = false;
+          }
+        },
+        "object:selected": function () {
+          pausePanning = true;
+        },
+        "selection:cleared": function () {
+          pausePanning = false;
+        },
+        "touch:drag": function (e) {
+            console.log("touch:drag",e.e)
+          if (
+            pausePanning == false &&
+            undefined != e.e.layerX &&
+            undefined != e.e.layerY
+          ) {
+            currentX = e.e.layerX;
+            currentY = e.e.layerY;
+            xChange = currentX - lastX;
+            yChange = currentY - lastY;
+
+            if (
+              Math.abs(currentX - lastX) <= 50 &&
+              Math.abs(currentY - lastY) <= 50
+            ) {
+              var delta = new fabric.Point(xChange, yChange);
+              fabricCanvas.relativePan(delta);
+            }
+
+            lastX = e.e.layerX;
+            lastY = e.e.layerY;
+          }
+        },
+      });
+      function zoom(isZoomIn) {
+        const canvas = fabricCanvas;
+        if (isZoomIn) {
+          zoomIn(canvas);
+        } else {
+          zoomOut(canvas);
+        }
+      }
+
+      function zoomIn(canvas) {
+        const zoomFactor = 1.1;
+        const zoom = canvas.getZoom() * zoomFactor;
+        canvas.zoomToPoint({ x: canvas.width / 2, y: canvas.height / 2 }, zoom);
+      }
+
+      function zoomOut(canvas) {
+        const zoomFactor = 0.9;
+        const zoom = canvas.getZoom() * zoomFactor;
+        canvas.zoomToPoint({ x: canvas.width / 2, y: canvas.height / 2 }, zoom);
+      }
+      let isdraw = false;
+    //   function toggle() {
+    //     isdraw = !isdraw;
+    //     if (isdraw) {
+    //       fabricCanvas.freeDrawingBrush = new fabric.PencilBrush(fabricCanvas);
+    //       fabricCanvas.freeDrawingBrush.color = "red";
+    //     } else {
+    //       fabricCanvas.freeDrawingBrush = new fabric.PanBrush(fabricCanvas);
+    //     }
+    //   }
+    //   toggle();
+      (function (global) {
+        var fabric = global.fabric;
+
+        // dependancy not met
+        if (!fabric) {
+          return;
+        }
+        fabric.PanBrush = fabric.util.createClass(fabric.BaseBrush, {
+          initialize: function (canvas) {
+            this.canvas = canvas;
+            this.panning = false;
+            this.zooming = false;
+            this.lastX = 0;
+            this.lastY = 0;
+            this.canvas.freeDrawingCursor = `grab`;
+            this.canvas.on("mouse:wheel", (e) => {
+              this.onMouseWheel(e);
+            });
+          },
+
+          /**
+           * Invoked on mouse down
+           * @param {Object} pointer
+           */
+          onMouseDown: function (pointer, ev) {
+            if (ev.e.touches) {
+              this.lastX = pointer.x;
+              this.lastY = pointer.y;
+              this.isTouch = true;
+            }
+            this.panning = true;
+            this.canvas.freeDrawingCursor = `grabbing`;
+          },
+
+          /**
+           * Invoked on mouse move
+           * @param {Object} pointer
+           */
+          onMouseMove: function (pointer, ev) {
+            if (!this.panning) return;
+            if (ev.e.touches) {
+              ev.e.movementX = pointer.x - this.lastX;
+              ev.e.movementY = pointer.y - this.lastY;
+            }
+            pointer = new fabric.Point(ev.e.movementX, ev.e.movementY);
+            this.canvas.relativePan(pointer);
+            this.canvas.freeDrawingCursor = `grabbing`;
+          },
+
+          /**
+           * Invoked on mouse up
+           */
+          onMouseUp: function () {
+            this.panning = false;
+            this.canvas.freeDrawingCursor = `grab`;
+          },
+
+          onMouseWheel: function (opt) {
+            this.canvas.setViewportTransform([1, 0, 0, 1, 0, 0]);
+            // let delta = opt.e.deltaY;
+            // let zoom = this.canvas.getZoom();
+            // zoom *= 0.999 ** delta;
+            // if (zoom > 4) zoom = 4;
+            // if (zoom < 0.01) zoom = 0.01;
+            // this.canvas.setZoom(zoom);
+            // opt.e.preventDefault();
+            // opt.e.stopPropagation();
+          },
+        });
+      })(this);
+    </script>
+  </body>
+</html>
