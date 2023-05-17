@@ -122,7 +122,7 @@
      let isGestureEvent = true;
     var lPinchScale = e.self.scale;
     var scaleDiff = (lPinchScale -1)/10 + 1;// Slow down zoom speed
-    canvas.setZoom (canvas.viewport.zoom * scaleDiff);
+    fabricCanvas.setZoom (fabricCanvas.viewport.zoom * scaleDiff);
         },
         "object:selected": function () {
           pausePanning = true;
